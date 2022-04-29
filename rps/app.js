@@ -108,14 +108,14 @@ function getRndInteger(min, max, choice) {
 			setTimeout(function(){
 				alert("Du hast gewonnen!");
 				restart();
-			}, 2000);
+			}, 500);
 		}
 		if (ourscore < opponentscore) {
 			//user verliert
 			setTimeout(function(){
 				alert("Du hast leider verloren!");
 				restart();
-			}, 2000);
+			}, 500);
 		}
 			
 	}
