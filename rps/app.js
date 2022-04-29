@@ -106,16 +106,23 @@ function getRndInteger(min, max, choice) {
 		if (ourscore > opponentscore) {
 			//user gewinnt
 			setTimeout(function(){
-				alert("Du hast gewonnen!");
+				alert("You won!");
 				restart();
-			}, 500);
+			}, 100);
 		}
 		if (ourscore < opponentscore) {
 			//user verliert
 			setTimeout(function(){
-				alert("Du hast leider verloren!");
+				alert("You lost!");
 				restart();
-			}, 500);
+			}, 100);
+		}
+		if (ourscore == opponentscore) {
+			//user verliert
+			setTimeout(function(){
+				alert("Draw!");
+				restart();
+			}, 100);
 		}
 			
 	}
