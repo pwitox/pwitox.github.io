@@ -17,15 +17,6 @@ h1 {
   margin-top: 15px;
 }
 
-/* GAME TIMER (oben unter Titel) */
-.game-timer {
-  background: #333;
-  padding: 10px;
-  border-radius: 12px;
-  width: 200px;
-  margin: 10px auto 20px auto;
-}
-
 /* CONTAINER */
 .container {
   display: flex;
@@ -49,7 +40,7 @@ h1 {
   height: 55px;
 }
 
-/* TIMER BOX */
+/* TIMER BOX (GILT JETZT AUCH FÜR GAME TIMER) */
 .timer {
   background: #222;
   padding: 15px;
@@ -58,8 +49,10 @@ h1 {
   position: relative;
 }
 
+/* TIME TEXT */
 .time {
   font-size: 24px;
+  margin-bottom: 10px;
 }
 
 /* FLASH ICON */
@@ -87,7 +80,7 @@ h1 {
   background: #e74c3c;
 }
 
-/* 🔥 END TIME (JETZT GROß & RECHTS AUSSEN) */
+/* 🔥 END TIME */
 .end-time {
   font-size: 28px;
   font-weight: bold;
@@ -96,6 +89,11 @@ h1 {
   text-align: left;
   color: #ffd700;
 }
+
+/* GAME TIMER (jetzt nur noch minimale Anpassung) */
+.game-timer {
+  width: 260px;
+}
 </style>
 </head>
 
@@ -103,13 +101,20 @@ h1 {
 
 <h1>Oily's loser support tool</h1>
 
-<!-- GAME TIMER -->
-<div class="game-timer">
-  <div id="gameTime">00:00</div>
-  <button onclick="startGame()">Start</button>
-  <button onclick="resetGame()">Reset</button>
+<!-- GAME TIMER (JETZT IM TIMER-DESIGN) -->
+<div class="container">
+  <div class="row">
+    <div class="timer game-timer">
+      <div class="time" id="gameTime">00:00</div>
+      <div>
+        <button onclick="startGame()" class="time-btn">Start</button>
+        <button onclick="resetGame()" class="time-btn">Reset</button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- CHAMP TIMERS -->
 <div class="container" id="timers"></div>
 
 <script>
