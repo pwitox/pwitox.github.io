@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 20px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .timer {
+      background: #222;
+      padding: 20px;
+      border-radius: 15px;
+      width: 180px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .time {
+      font-size: 28px;
+      margin: 10px 0;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #4CAF50;
+      color: white;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    select {
+      margin-top: 10px;
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .finished {
+      background: #e74c3c !important;
+    }
+  </style>
+</head>
+<body>
+
+<h1>⏱️ Multi Timer</h1>
+
+<div class="container" id="timers"></div>
+
+<script>
+const presetTimes = [300, 272, 254, 234];
+const timersContainer = document.getElementById("timers");
+
+class Timer {
+  constructor(id) {
+    this.id = id;
+    this.time = presetTimes[0];
+    this.remaining = this.time;
+    this.interval = null;
+
+    this.createUI();
+  }
+
+  createUI() {
+    this.el = document.createElement("div");
+    this.el.className = "timer";
+
+    this.timeDisplay = document.createElement("div");
+    this.timeDisplay.className = "time";
+    this.updateDisplay();
+
+    this.button = document.createElement("button");
+    this.button.innerHTML = "▶️";
+    this.button.onclick = () => this.start();
+
+    this.select = document.createElement("select");
+    presetTimes.forEach(t => {
+      const option = document.createElement("option");
+      option.value = t;
+      option.text = t + " s";
+      this.select.appendChild(option);
+    });
+
+    this.select.onchange = (e) => {
+      this.reset(parseInt(e.target.value));
+    };
+
+    this.el.appendChild(this.timeDisplay);
+    this.el.appendChild(this.button);
+    this.el.appendChild(this.select);
+
+    timersContainer.appendChild(this.el);
+  }
+
+  updateDisplay() {
+    const min = Math.floor(this.remaining / 60);
+    const sec = this.remaining % 60;
+    this.timeDisplay.innerText =
+      `${min}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  start() {
+    if (this.interval) return;
+
+    this.interval = setInterval(() => {
+      this.remaining--;
+      this.updateDisplay();
+
+      if (this.remaining <= 0) {
+        clearInterval(this.interval);
+        this.interval = null;
+        this.el.classList.add("finished");
+      }
+    }, 1000);
+  }
+
+  reset(newTime) {
+    clearInterval(this.interval);
+    this.interval = null;
+    this.time = newTime;
+    this.remaining = newTime;
+    this.el.classList.remove("finished");
+    this.updateDisplay();
+  }
+}
+
+// 5 Timer erstellen
+for (let i = 0; i < 5; i++) {
+  new Timer(i);
+}
+</script>
+
+</body>
+</html>
