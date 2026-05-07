@@ -15,45 +15,83 @@
       margin: 20px;
     }
 
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .reset-all {
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+      background: #e74c3c;
+      color: white;
+      cursor: pointer;
+    }
+
     .container {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px;
+      flex-direction: column; /* ⬅️ Spalte */
+      align-items: center;
+      gap: 15px;
     }
 
     .timer {
       background: #222;
-      padding: 20px;
+      padding: 15px;
       border-radius: 15px;
-      width: 180px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      width: 260px;
     }
 
     .time {
-      font-size: 28px;
-      margin: 10px 0;
+      font-size: 26px;
+      margin-bottom: 10px;
     }
 
-    button {
-      font-size: 20px;
-      padding: 8px 15px;
-      border: none;
-      border-radius: 10px;
+    .icon {
+      width: 60px;
+      height: 60px;
       cursor: pointer;
-      background: #4CAF50;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .icon:hover {
+      transform: scale(1.1);
+    }
+
+    .icon:active {
+      transform: scale(0.95);
+    }
+
+    .disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .buttons {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .time-btn {
+      padding: 5px 8px;
+      font-size: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #444;
       color: white;
     }
 
-    button:hover {
-      background: #45a049;
+    .time-btn:hover {
+      background: #666;
     }
 
-    select {
-      margin-top: 10px;
-      padding: 5px;
-      border-radius: 5px;
-      border: none;
+    .active {
+      background: #4CAF50;
     }
 
     .finished {
@@ -63,22 +101,36 @@
 </head>
 <body>
 
-<h1>⏱️ Multi Timer</h1>
+<h1>⚡ Multi Timer</h1>
+
+<div class="controls">
+  <button class="reset-all" onclick="resetAll()">🔄 Alle zurücksetzen</button>
+</div>
 
 <div class="container" id="timers"></div>
 
 <script>
-const presetTimes = [300, 272, 254, 234];
+const presets = [
+  {time: 300, label: "300s (nix)"},
+  {time: 272, label: "272s (boots)"},
+  {time: 254, label: "254s (rune)"},
+  {time: 234, label: "234s (boots+rune)"}
+];
+
 const timersContainer = document.getElementById("timers");
+const timers = [];
+
+const flashIconURL = "https://static.wikia.nocookie.net/leagueoflegends/images/8/8c/Summoner_Flash.png";
 
 class Timer {
   constructor(id) {
     this.id = id;
-    this.time = presetTimes[0];
+    this.time = presets[0].time;
     this.remaining = this.time;
     this.interval = null;
 
     this.createUI();
+    timers.push(this);
   }
 
   createUI() {
@@ -87,29 +139,46 @@ class Timer {
 
     this.timeDisplay = document.createElement("div");
     this.timeDisplay.className = "time";
-    this.updateDisplay();
 
-    this.button = document.createElement("button");
-    this.button.innerHTML = "▶️";
-    this.button.onclick = () => this.start();
+    this.icon = document.createElement("img");
+    this.icon.src = flashIconURL;
+    this.icon.className = "icon";
+    this.icon.onclick = () => this.start();
 
-    this.select = document.createElement("select");
-    presetTimes.forEach(t => {
-      const option = document.createElement("option");
-      option.value = t;
-      option.text = t + " s";
-      this.select.appendChild(option);
+    // Buttons Container
+    this.buttonsDiv = document.createElement("div");
+    this.buttonsDiv.className = "buttons";
+
+    this.buttons = [];
+
+    presets.forEach((p, index) => {
+      const btn = document.createElement("button");
+      btn.className = "time-btn";
+      btn.innerText = p.label;
+
+      btn.onclick = () => {
+        this.reset(p.time);
+        this.setActiveButton(index);
+      };
+
+      this.buttons.push(btn);
+      this.buttonsDiv.appendChild(btn);
     });
 
-    this.select.onchange = (e) => {
-      this.reset(parseInt(e.target.value));
-    };
+    this.setActiveButton(0);
 
     this.el.appendChild(this.timeDisplay);
-    this.el.appendChild(this.button);
-    this.el.appendChild(this.select);
+    this.el.appendChild(this.icon);
+    this.el.appendChild(this.buttonsDiv);
 
     timersContainer.appendChild(this.el);
+
+    this.updateDisplay();
+  }
+
+  setActiveButton(index) {
+    this.buttons.forEach(b => b.classList.remove("active"));
+    this.buttons[index].classList.add("active");
   }
 
   updateDisplay() {
@@ -121,6 +190,8 @@ class Timer {
 
   start() {
     if (this.interval) return;
+
+    this.icon.classList.add("disabled");
 
     this.interval = setInterval(() => {
       this.remaining--;
@@ -134,12 +205,15 @@ class Timer {
     }, 1000);
   }
 
-  reset(newTime) {
+  reset(newTime = this.time) {
     clearInterval(this.interval);
     this.interval = null;
     this.time = newTime;
     this.remaining = newTime;
+
     this.el.classList.remove("finished");
+    this.icon.classList.remove("disabled");
+
     this.updateDisplay();
   }
 }
@@ -147,6 +221,12 @@ class Timer {
 // 5 Timer erstellen
 for (let i = 0; i < 5; i++) {
   new Timer(i);
+}
+
+function resetAll() {
+  timers.forEach(timer => {
+    timer.reset(timer.time);
+  });
 }
 </script>
 
