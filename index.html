@@ -1,126 +1,115 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Multi Timer</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      text-align: center;
-    }
+<meta charset="UTF-8">
+<title>LoL Timer Tool</title>
 
-    h1 {
-      margin: 20px;
-    }
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+}
 
-    .controls {
-      margin-bottom: 20px;
-    }
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
 
-    .reset-all {
-      padding: 10px 20px;
-      border-radius: 10px;
-      border: none;
-      background: #e74c3c;
-      color: white;
-      cursor: pointer;
-    }
+/* GAME TIMER */
+.game-timer {
+  background: #333;
+  padding: 15px;
+  border-radius: 15px;
+  width: 300px;
+}
 
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-    }
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-    /* NEU: Reihe mit Icon + Timer */
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+.lane-icon {
+  width: 50px;
+}
 
-    .lane-icon {
-      width: 50px;
-      height: 50px;
-    }
+.timer {
+  background: #222;
+  padding: 15px;
+  border-radius: 15px;
+  width: 260px;
+  position: relative;
+}
 
-    .timer {
-      background: #222;
-      padding: 15px;
-      border-radius: 15px;
-      width: 260px;
-    }
+.time {
+  font-size: 24px;
+}
 
-    .time {
-      font-size: 26px;
-      margin-bottom: 10px;
-    }
+.end-time {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 14px;
+  color: #aaa;
+}
 
-    .icon {
-      width: 60px;
-      height: 60px;
-      cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
-    }
+.icon {
+  width: 60px;
+  cursor: pointer;
+}
 
-    .icon:hover {
-      transform: scale(1.1);
-    }
+.buttons {
+  margin-top: 8px;
+}
 
-    .disabled {
-      opacity: 0.4;
-      pointer-events: none;
-    }
+.time-btn {
+  margin: 2px;
+  padding: 5px;
+  border-radius: 6px;
+  border: none;
+  background: #444;
+  color: white;
+}
 
-    .buttons {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      justify-content: center;
-    }
+.active {
+  background: #4CAF50;
+}
 
-    .time-btn {
-      padding: 5px 8px;
-      font-size: 12px;
-      border-radius: 8px;
-      border: none;
-      background: #444;
-      color: white;
-      cursor: pointer;
-    }
-
-    .active {
-      background: #4CAF50;
-    }
-
-    .finished {
-      background: #e74c3c !important;
-    }
-  </style>
+.finished {
+  background: #e74c3c;
+}
+</style>
 </head>
+
 <body>
 
-<h1>⚡ Multi Timer</h1>
+<h1>⚡ LoL Timer Tool</h1>
 
-<div class="controls">
-  <button class="reset-all" onclick="resetAll()">🔄 Alle zurücksetzen</button>
+<!-- GAME TIMER -->
+<div class="game-timer">
+  <div id="gameTime">00:00</div>
+  <button onclick="startGame()">Start</button>
+  <button onclick="resetGame()">Reset</button>
 </div>
+
+<br>
+
+<button onclick="resetAll()">🔄 Alle Timer reset</button>
 
 <div class="container" id="timers"></div>
 
 <script>
 const presets = [
-  {time: 300, label: "300s (nix)"},
-  {time: 272, label: "272s (boots)"},
-  {time: 254, label: "254s (rune)"},
-  {time: 234, label: "234s (boots+rune)"}
+  {time:300,label:"300s (nix)"},
+  {time:272,label:"272s (boots)"},
+  {time:254,label:"254s (rune)"},
+  {time:234,label:"234s (boots+rune)"}
 ];
 
-// Lane Icons (oben → unten)
 const laneIcons = [
   "Top_icon.png",
   "Jungle_icon.png",
@@ -131,125 +120,157 @@ const laneIcons = [
 
 const flashIconURL = "Flash_HD.png";
 
-const timersContainer = document.getElementById("timers");
+let gameSeconds = 0;
+let gameInterval = null;
+
+// GAME TIMER
+function startGame(){
+  if(gameInterval) return;
+  gameInterval = setInterval(()=>{
+    gameSeconds++;
+    updateGameDisplay();
+  },1000);
+}
+
+function resetGame(){
+  clearInterval(gameInterval);
+  gameInterval = null;
+  gameSeconds = 0;
+  updateGameDisplay();
+}
+
+function updateGameDisplay(){
+  const min = Math.floor(gameSeconds/60);
+  const sec = gameSeconds%60;
+  document.getElementById("gameTime").innerText =
+    `${min}:${sec.toString().padStart(2,"0")}`;
+}
+
+// TIMER CLASS
 const timers = [];
 
-class Timer {
-  constructor(id) {
-    this.id = id;
-    this.time = presets[0].time;
-    this.remaining = this.time;
-    this.interval = null;
+class Timer{
+  constructor(id){
+    this.id=id;
+    this.time=presets[0].time;
+    this.remaining=this.time;
+    this.interval=null;
 
     this.createUI();
     timers.push(this);
   }
 
-  createUI() {
-    // NEU: ganze Reihe
-    this.row = document.createElement("div");
-    this.row.className = "row";
+  createUI(){
+    this.row=document.createElement("div");
+    this.row.className="row";
 
-    // Lane Icon
-    this.laneIcon = document.createElement("img");
-    this.laneIcon.src = laneIcons[this.id];
-    this.laneIcon.className = "lane-icon";
+    this.lane=document.createElement("img");
+    this.lane.src=laneIcons[this.id];
+    this.lane.className="lane-icon";
 
-    // Timer Box
-    this.el = document.createElement("div");
-    this.el.className = "timer";
+    this.el=document.createElement("div");
+    this.el.className="timer";
 
-    this.timeDisplay = document.createElement("div");
-    this.timeDisplay.className = "time";
+    this.timeDisplay=document.createElement("div");
+    this.timeDisplay.className="time";
 
-    this.icon = document.createElement("img");
-    this.icon.src = flashIconURL;
-    this.icon.className = "icon";
-    this.icon.onclick = () => this.start();
+    // END TIME DISPLAY
+    this.endTimeDisplay=document.createElement("div");
+    this.endTimeDisplay.className="end-time";
 
-    this.buttonsDiv = document.createElement("div");
-    this.buttonsDiv.className = "buttons";
+    this.icon=document.createElement("img");
+    this.icon.src=flashIconURL;
+    this.icon.className="icon";
+    this.icon.onclick=()=>this.start();
 
-    this.buttons = [];
+    this.buttonsDiv=document.createElement("div");
 
-    presets.forEach((p, index) => {
-      const btn = document.createElement("button");
-      btn.className = "time-btn";
-      btn.innerText = p.label;
+    this.buttons=[];
 
-      btn.onclick = () => {
+    presets.forEach((p,i)=>{
+      const btn=document.createElement("button");
+      btn.className="time-btn";
+      btn.innerText=p.label;
+
+      btn.onclick=()=>{
         this.reset(p.time);
-        this.setActiveButton(index);
+        this.setActive(i);
       };
 
       this.buttons.push(btn);
       this.buttonsDiv.appendChild(btn);
     });
 
-    this.setActiveButton(0);
+    this.setActive(0);
 
     this.el.appendChild(this.timeDisplay);
+    this.el.appendChild(this.endTimeDisplay);
     this.el.appendChild(this.icon);
     this.el.appendChild(this.buttonsDiv);
 
-    // Zusammenbauen
-    this.row.appendChild(this.laneIcon);
+    this.row.appendChild(this.lane);
     this.row.appendChild(this.el);
 
-    timersContainer.appendChild(this.row);
+    document.getElementById("timers").appendChild(this.row);
 
-    this.updateDisplay();
+    this.update();
   }
 
-  setActiveButton(index) {
-    this.buttons.forEach(b => b.classList.remove("active"));
-    this.buttons[index].classList.add("active");
+  setActive(i){
+    this.buttons.forEach(b=>b.classList.remove("active"));
+    this.buttons[i].classList.add("active");
   }
 
-  updateDisplay() {
-    const min = Math.floor(this.remaining / 60);
-    const sec = this.remaining % 60;
-    this.timeDisplay.innerText =
-      `${min}:${sec.toString().padStart(2, '0')}`;
+  update(){
+    const m=Math.floor(this.remaining/60);
+    const s=this.remaining%60;
+    this.timeDisplay.innerText=`${m}:${s.toString().padStart(2,"0")}`;
   }
 
-  start() {
-    if (this.interval) return;
+  start(){
+    if(this.interval) return;
 
-    this.icon.classList.add("disabled");
+    // 👉 END TIME BERECHNEN
+    const end = gameSeconds + this.time;
+    const m = Math.floor(end/60);
+    const s = end%60;
 
-    this.interval = setInterval(() => {
+    this.endTimeDisplay.innerText =
+      `${m}:${s.toString().padStart(2,"0")}`;
+
+    this.interval=setInterval(()=>{
       this.remaining--;
-      this.updateDisplay();
+      this.update();
 
-      if (this.remaining <= 0) {
+      if(this.remaining<=0){
         clearInterval(this.interval);
-        this.interval = null;
+        this.interval=null;
         this.el.classList.add("finished");
       }
-    }, 1000);
+    },1000);
   }
 
-  reset(newTime = this.time) {
+  reset(newTime=this.time){
     clearInterval(this.interval);
-    this.interval = null;
-    this.time = newTime;
-    this.remaining = newTime;
+    this.interval=null;
+
+    this.time=newTime;
+    this.remaining=newTime;
 
     this.el.classList.remove("finished");
-    this.icon.classList.remove("disabled");
+    this.endTimeDisplay.innerText="";
 
-    this.updateDisplay();
+    this.update();
   }
 }
 
-// 5 Timer
-for (let i = 0; i < 5; i++) {
+// CREATE 5 TIMER
+for(let i=0;i<5;i++){
   new Timer(i);
 }
 
-function resetAll() {
-  timers.forEach(timer => timer.reset(timer.time));
+function resetAll(){
+  timers.forEach(t=>t.reset(t.time));
 }
 </script>
 
