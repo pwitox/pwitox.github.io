@@ -21,7 +21,6 @@
 
     .reset-all {
       padding: 10px 20px;
-      font-size: 16px;
       border-radius: 10px;
       border: none;
       background: #e74c3c;
@@ -31,9 +30,21 @@
 
     .container {
       display: flex;
-      flex-direction: column; /* ⬅️ Spalte */
+      flex-direction: column;
       align-items: center;
       gap: 15px;
+    }
+
+    /* NEU: Reihe mit Icon + Timer */
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lane-icon {
+      width: 50px;
+      height: 50px;
     }
 
     .timer {
@@ -59,10 +70,6 @@
       transform: scale(1.1);
     }
 
-    .icon:active {
-      transform: scale(0.95);
-    }
-
     .disabled {
       opacity: 0.4;
       pointer-events: none;
@@ -79,15 +86,11 @@
     .time-btn {
       padding: 5px 8px;
       font-size: 12px;
-      border: none;
       border-radius: 8px;
-      cursor: pointer;
+      border: none;
       background: #444;
       color: white;
-    }
-
-    .time-btn:hover {
-      background: #666;
+      cursor: pointer;
     }
 
     .active {
@@ -117,10 +120,19 @@ const presets = [
   {time: 234, label: "234s (boots+rune)"}
 ];
 
-const timersContainer = document.getElementById("timers");
-const timers = [];
+// Lane Icons (oben → unten)
+const laneIcons = [
+  "Top_icon.png",
+  "Jungle_icon.png",
+  "Middle_icon.png",
+  "Bottom_icon.png",
+  "Support_icon.png"
+];
 
 const flashIconURL = "Flash_HD.png";
+
+const timersContainer = document.getElementById("timers");
+const timers = [];
 
 class Timer {
   constructor(id) {
@@ -134,6 +146,16 @@ class Timer {
   }
 
   createUI() {
+    // NEU: ganze Reihe
+    this.row = document.createElement("div");
+    this.row.className = "row";
+
+    // Lane Icon
+    this.laneIcon = document.createElement("img");
+    this.laneIcon.src = laneIcons[this.id];
+    this.laneIcon.className = "lane-icon";
+
+    // Timer Box
     this.el = document.createElement("div");
     this.el.className = "timer";
 
@@ -145,7 +167,6 @@ class Timer {
     this.icon.className = "icon";
     this.icon.onclick = () => this.start();
 
-    // Buttons Container
     this.buttonsDiv = document.createElement("div");
     this.buttonsDiv.className = "buttons";
 
@@ -171,7 +192,11 @@ class Timer {
     this.el.appendChild(this.icon);
     this.el.appendChild(this.buttonsDiv);
 
-    timersContainer.appendChild(this.el);
+    // Zusammenbauen
+    this.row.appendChild(this.laneIcon);
+    this.row.appendChild(this.el);
+
+    timersContainer.appendChild(this.row);
 
     this.updateDisplay();
   }
@@ -218,15 +243,13 @@ class Timer {
   }
 }
 
-// 5 Timer erstellen
+// 5 Timer
 for (let i = 0; i < 5; i++) {
   new Timer(i);
 }
 
 function resetAll() {
-  timers.forEach(timer => {
-    timer.reset(timer.time);
-  });
+  timers.forEach(timer => timer.reset(timer.time));
 }
 </script>
 
